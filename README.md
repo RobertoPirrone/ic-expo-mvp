@@ -5,11 +5,11 @@ Changes to Kaia's repo needed for Expo SDK52 (cli 0.22.20)
 This repo is still in its early stage, tested only on the iOS simulator
 
 Basically:
-    * updated package versions
-    * the content of App.js now is src/app/index.tsx
-    * the URL of the deep link contains the string *redirect*, so a redirect.tsx is needed under src/app
-    * deep link URL is taken from the environment (EXPO_PUBLIC_DEEP_LINK)
-    * I used Expo Go, so the deep link url has a *exp:* scheme: exp://127.0.0.1:8081/--/
+- updated package versions
+- the content of App.js now is src/app/index.tsx
+- the URL of the deep link contains the string *redirect*, so a redirect.tsx is needed under src/app
+- deep link URL is taken from the environment (EXPO_PUBLIC_DEEP_LINK)
+- I used Expo Go, so the deep link url has a *exp:* scheme: exp://127.0.0.1:8081/--/
 
 ## Get started
 
