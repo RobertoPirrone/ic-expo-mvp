@@ -38,3 +38,8 @@ yarn-error.*
 # these directories are rebuilt, no need to save them
 ios
 android
+
+# Expo
+.expo
+dist/
+web-build/

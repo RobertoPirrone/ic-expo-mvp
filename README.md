@@ -1,9 +1,15 @@
 # Welcome to your Expo app 👋
 
-Starting from a clean, up to date [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app), we have integrated the Internet Identity MVP developed by Kaia Peacock
+Changes to Kaia's repo needed for Expo SDK52 (cli 0.22.20)
 
-This repo is a first attempt, still in its early stage, tested only on a simulator
+This repo is still in its early stage, tested only on the iOS simulator
 
+Basically:
+    * updated package versions
+    * the content of App.js now is src/app/index.tsx
+    * the URL of the deep link contains the string *redirect*, so a redirect.tsx is needed under src/app
+    * deep link URL is taken from the environment (EXPO_PUBLIC_DEEP_LINK)
+    * I used Expo Go, so the deep link url has a *exp:* scheme: exp://127.0.0.1:8081/--/
 
 ## Get started
 
@@ -11,7 +17,6 @@ This repo is a first attempt, still in its early stage, tested only on a simulat
 
    ```bash
    npm install
-   bash add_extra_packages.sh
    ```
 
 2. Start the app
@@ -20,32 +25,9 @@ This repo is a first attempt, still in its early stage, tested only on a simulat
     npx expo start
    ```
 
-## Get a fresh project
-
-If you see a proper expo demo app in the simulator, you can clean the code, 
-
-```bash
-npm run reset-project
-git add app-example
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-
-## Integrate the MVP code
-
-The code from the GitHub repo contains both the canister related stuff (ii_integration, identity canister, backend canister implementing a whoami call) and the React Native Code (under src/app). As a first step I took andantage of the existing MainNet canisters for Internet Identity and II_integration), and simply adapted the RN code to the current Expo standards:
-    * *App.js* renamed to *src/app/index.tsx*
-    * directories *components* and *hooks* in src/app
-    * changed a few hardwired strings in the code using the EXPO_PUBLIC_* variables in .env
-
 ## Deep Link
 
-After the Authentication phase, control is transeffered back to the mobile app, using a **Deep Link**. This kind of link changes from development to production. 
-
-## Run the MVP
-
-It has been tested only with the iOS Simulator, using *Expo Go*, so the deep link must follow the *exp:27.0.0.1:8081* scheme
+After the Authentication phase, control is transfered back to the mobile app, using a **Deep Link**. This kind of link changes from development to production. 
 
 ## Learn more
 

@@ -80,7 +80,8 @@ export function useAuth() {
     // url.searchParams.set("redirect_uri", encodeURIComponent(redirect));
     url.searchParams.set(
       "redirect_uri",
-      encodeURIComponent(`com.anonymous.ic-expo://expo-development-client`)
+      // encodeURIComponent(`com.anonymous.ic-expo://expo-development-client`)
+      encodeURIComponent(process.env.EXPO_PUBLIC_DEEP_LINK)
     );
 
     url.searchParams.set("pubkey", derKey);
