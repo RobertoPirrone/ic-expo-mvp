@@ -2,7 +2,9 @@
 
 Changes to Kaia's repo needed for Expo SDK52 (cli 0.22.20)
 
-This repo is still in its early stage, tested only on the iOS simulator
+This repo is still in its early stage, tested only on the iOS simulator. 
+
+No changes to the canisters stuff, I use the ones provided by Kaia
 
 Basically:
 - updated package versions
@@ -13,10 +15,11 @@ Basically:
 
 ## Get started
 
-1. Install dependencies (both standard expo stuff and the IC libraries)
+1. Install dependencies (both standard expo stuff and the IC libraries), and build the ios and android environment
 
    ```bash
    npm install
+   expo prebuild
    ```
 
 2. Start the app
