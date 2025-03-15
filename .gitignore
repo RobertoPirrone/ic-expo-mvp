@@ -34,3 +34,7 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 .dfx
+
+# these directories are rebuilt, no need to save them
+ios
+android
