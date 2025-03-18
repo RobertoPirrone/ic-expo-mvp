@@ -1,5 +1,11 @@
 {
   "plugins": [
     "expo-secure-store"
-  ]
+  ],
+  "android": {
+    "package": "com.robertopirrone.icexpomvp"
+  },
+  "ios": {
+    "bundleIdentifier": "com.robertopirrone.icexpomvp"
+  }
 }
