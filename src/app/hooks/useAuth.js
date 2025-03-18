@@ -30,7 +30,12 @@ export function useAuth() {
       if (storedKey) {
         setBaseKey(Ed25519KeyIdentity.fromJSON(storedKey));
       } else {
-        const key = Ed25519KeyIdentity.generate();
+        // seed needed on Android 
+        // const seed = new Uint8Array(new Array(32).fill(0));
+        // const key = Ed25519KeyIdentity.generate(seed);
+
+        // maybe a null seed is enough for both ios and android
+        const key = Ed25519KeyIdentity.generate(null);
         setBaseKey(key);
         await save("baseKey", JSON.stringify(key.toJSON()));
       }
@@ -103,3 +108,5 @@ export function useAuth() {
     logout,
   };
 };
+
+export default useAuth;

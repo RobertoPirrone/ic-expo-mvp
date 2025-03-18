@@ -49,3 +49,6 @@ export const buttonTextStyles = {
   marginBottom: 0,
   fontSize: remToPx(1.2),
 };
+
+// default export required for Route
+export default buttonTextStyles;
