@@ -1,6 +1,7 @@
 /*
  * hides all the II setup phase
- * imports backend canister id and idl definitions form the backend declarations directory
+ * imports idl definitions from the backend declarations directory
+ * canisterId instead is derived from the expo environment, the declarations value is based on process.env
  * application code will be given, among other things, an Actor
  * @example
  * import { useAuth } from "../hooks/useAuth";
@@ -21,9 +22,10 @@ import { Principal } from "@dfinity/principal";
 import { blsVerify } from "@dfinity/bls-verify";
 import * as WebBrowser from "expo-web-browser";
 import { useURL } from "expo-linking";
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
-import { canisterId, idlFactory } from "../../declarations/whoami";
+import { canisterId, idlFactory } from "../../declarations/backend";
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
@@ -46,12 +48,13 @@ export function useAuth() {
       if (storedKey) {
         setBaseKey(Ed25519KeyIdentity.fromJSON(storedKey));
       } else {
-        // seed needed on Android 
-        // const seed = new Uint8Array(new Array(32).fill(0));
-        // const key = Ed25519KeyIdentity.generate(seed);
-
-        // maybe a null seed is enough for both ios and android
-        const key = Ed25519KeyIdentity.generate(null);
+        if (Platform.OS === "ios")  {
+          const key = Ed25519KeyIdentity.generate(null);
+      } else {
+          // seed needed on Android 
+          const seed = new Uint8Array(new Array(32).fill(0));
+          const key = Ed25519KeyIdentity.generate(seed);
+        }
         setBaseKey(key);
         await save("baseKey", JSON.stringify(key.toJSON()));
       }
