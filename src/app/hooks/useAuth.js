@@ -1,3 +1,12 @@
+/*
+ * hides all the II setup phase
+ * application code will be given, among other things, an Actor
+ * @example
+ * import { useAuth } from "../hooks/useAuth";
+ * const { backendActor, whoami} = useAuth();
+ * 
+ **/
+
 import { useState, useEffect } from "react";
 import { toHex } from "@dfinity/agent";
 import {
@@ -6,6 +15,9 @@ import {
   DelegationIdentity,
   isDelegationValid,
 } from "@dfinity/identity";
+import { Actor, HttpAgent } from "@dfinity/agent";
+import { Principal } from "@dfinity/principal";
+import { blsVerify } from "@dfinity/bls-verify";
 import * as WebBrowser from "expo-web-browser";
 import { useURL } from "expo-linking";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -18,6 +30,8 @@ async function save(key, value) {
 export function useAuth() {
   const [baseKey, setBaseKey] = useState();
   const [isReady, setIsReady] = useState(false);
+  const [backendActor, setBackendActor] = useState(null);
+  const [whoami, setWhoami] = useState(null);
   const url = useURL();
   /**
    * @type {[DelegationIdentity | null, React.Dispatch<DelegationIdentity | null>]} state
@@ -78,6 +92,40 @@ export function useAuth() {
     }
   }, [url]);
 
+  useEffect(() => {
+    if (!identity) return;
+    if (backendActor) return;
+    // delegation ok, ready to build the agent and then the actor
+    const agent = new HttpAgent({
+      identity,
+      host: "https://icp-api.io",
+      fetchOptions: {
+        reactNative: {
+          __nativeResponseType: "base64",
+        },
+      },
+      blsVerify,
+      verifyQuerySignatures: true,
+      callOptions: {
+        reactNative: {
+          textStreaming: true,
+        },
+      },
+    });
+    const idlFactory = ({ IDL }) => {
+      return IDL.Service({ whoami: IDL.Func([], [IDL.Principal], ["query"]) });
+    };
+    const actor = Actor.createActor(idlFactory, {
+      agent,
+      canisterId: "ivcos-eqaaa-aaaab-qablq-cai",
+    });
+      setBackendActor(actor);
+      const principal = identity.getPrincipal();
+      setWhoami(principal.toText());
+      console.log("whoami useAuth:", principal.toText());
+  }, [identity]);
+
+
   // Function to handle login and update identity based on base key
   const login = async () => {
     const derKey = toHex(baseKey.getPublicKey().toDer());
@@ -106,6 +154,8 @@ export function useAuth() {
     isReady,
     login,
     logout,
+    whoami,
+    backendActor
   };
 };
 

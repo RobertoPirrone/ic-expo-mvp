@@ -10,41 +10,16 @@ import {
   buttonTextStyles,
 } from "./styles";
 import { useAuth } from "../hooks/useAuth";
-import { Actor, HttpAgent } from "@dfinity/agent";
-import { Principal } from "@dfinity/principal";
-import { blsVerify } from "@dfinity/bls-verify";
 
+import { Principal } from "@dfinity/principal";
 function LoggedIn({ logout }) {
-  const { identity } = useAuth();
+  const { backendActor, whoami} = useAuth();
   const [principal, setPrincipal] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
 
-  const whoami = async () => {
-    const agent = new HttpAgent({
-      identity,
-      host: "https://icp-api.io",
-      fetchOptions: {
-        reactNative: {
-          __nativeResponseType: "base64",
-        },
-      },
-      blsVerify,
-      verifyQuerySignatures: true,
-      callOptions: {
-        reactNative: {
-          textStreaming: true,
-        },
-      },
-    });
-    const idlFactory = ({ IDL }) => {
-      return IDL.Service({ whoami: IDL.Func([], [IDL.Principal], ["query"]) });
-    };
-    const actor = Actor.createActor(idlFactory, {
-      agent,
-      canisterId: "ivcos-eqaaa-aaaab-qablq-cai",
-    });
-
-    const response = await actor.whoami();
+  const whoamiFromBackend = async () => {
+      if (!backendActor) return;
+    const response = await backendActor.whoami();
     return response;
   };
 
@@ -63,7 +38,7 @@ function LoggedIn({ logout }) {
         title="whoami"
         onPress={() => {
           setBusy(true);
-          whoami().then((principal) => {
+          whoamiFromBackend().then((principal) => {
             setPrincipal(Principal.from(principal).toString());
             setBusy(false);
           });
@@ -71,7 +46,7 @@ function LoggedIn({ logout }) {
       >
         <Text style={buttonTextStyles}>whoami</Text>
       </Pressable>
-      {principal && <Text style={baseTextStyles}>Principal: {principal}</Text>}
+      {principal && whoami && <Text style={baseTextStyles}>Principal: {principal}, from useAuth: {whoami} </Text>}
       <Pressable
         title="logout"
         style={busy ? disabledButtonStyles : buttonStyles}
