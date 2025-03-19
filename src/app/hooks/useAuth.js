@@ -1,5 +1,6 @@
 /*
  * hides all the II setup phase
+ * imports backend canister id and idl definitions form the backend declarations directory
  * application code will be given, among other things, an Actor
  * @example
  * import { useAuth } from "../hooks/useAuth";
@@ -22,6 +23,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useURL } from "expo-linking";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import { canisterId, idlFactory } from "../../declarations/whoami";
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
@@ -112,12 +114,15 @@ export function useAuth() {
         },
       },
     });
-    const idlFactory = ({ IDL }) => {
+    const old_idlFactory = ({ IDL }) => {
       return IDL.Service({ whoami: IDL.Func([], [IDL.Principal], ["query"]) });
     };
+      console.log("canisterId:", canisterId);
+      console.log("canisterId EXPO_PUBLIC_BACKEND_ID :", process.env.EXPO_PUBLIC_BACKEND_ID);
     const actor = Actor.createActor(idlFactory, {
       agent,
-      canisterId: "ivcos-eqaaa-aaaab-qablq-cai",
+      // canisterId: "ivcos-eqaaa-aaaab-qablq-cai",
+      canisterId: process.env.EXPO_PUBLIC_BACKEND_ID,
     });
       setBackendActor(actor);
       const principal = identity.getPrincipal();
@@ -129,7 +134,8 @@ export function useAuth() {
   // Function to handle login and update identity based on base key
   const login = async () => {
     const derKey = toHex(baseKey.getPublicKey().toDer());
-    const url = new URL("https://tdpaj-biaaa-aaaab-qaijq-cai.icp0.io/");
+    // const url = new URL("https://tdpaj-biaaa-aaaab-qaijq-cai.icp0.io/");
+    const url = new URL(process.env.EXPO_PUBLIC_II_INTEGRATION_URL);
     // url.searchParams.set("redirect_uri", encodeURIComponent(redirect));
     url.searchParams.set(
       "redirect_uri",
