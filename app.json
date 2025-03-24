@@ -1,4 +1,5 @@
 {
+  "scheme": "icexpo",
   "plugins": [
     "expo-secure-store"
   ],
@@ -7,5 +8,10 @@
   },
   "ios": {
     "bundleIdentifier": "com.robertopirrone.icexpomvp"
+  },
+  "extra": {
+    "eas": {
+      "projectId": "ae67e422-9a39-4c08-b6a7-32d9f8d10232"
+    }
   }
 }
