@@ -2,7 +2,10 @@
  * hides all the II setup phase
  * imports idl definitions from the backend declarations directory
  * canisterId instead is derived from the expo environment, the declarations value is based on process.env
- * application code will be given, among other things, an Actor
+ * basically the first two useEffect() will compute the key and the deepLink
+ * login() will call the II_integration Web page, with the above variables in the search string
+ * the third useEffect 
+ * the caller code will be given, among other things, an Actor
  * @example
  * import { useAuth } from "../hooks/useAuth";
  * const { backendActor, whoami} = useAuth();
@@ -25,7 +28,8 @@ import { useURL } from "expo-linking";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
-import { canisterId, idlFactory } from "../../declarations/backend";
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { canisterId, idlFactory } from "../../declarations/whoami";
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
@@ -42,24 +46,33 @@ export function useAuth() {
    */
   const [identity, setIdentity] = useState(null);
 
+  // we can already have a key in the Storage, otherwise get it
   useEffect(() => {
+    if (identity) return;
     (async () => {
-      const storedKey = await SecureStore.getItemAsync("baseKey");
-      if (storedKey) {
-        setBaseKey(Ed25519KeyIdentity.fromJSON(storedKey));
-      } else {
-        if (Platform.OS === "ios")  {
-          const key = Ed25519KeyIdentity.generate(null);
-      } else {
-          // seed needed on Android 
-          const seed = new Uint8Array(new Array(32).fill(0));
-          const key = Ed25519KeyIdentity.generate(seed);
+        let key = null;
+        let storedKey = null;
+        // getItemAsync may crash on reinstall
+        try {
+          storedKey = await SecureStore.getItemAsync('baseKey');
+        } catch (e) {
+          console.error("deleting secureStore baseKey");
+          await SecureStore.deleteItemAsync('baseKey');
         }
-        setBaseKey(key);
-        await save("baseKey", JSON.stringify(key.toJSON()));
-      }
+        if (storedKey) {
+          console.error("storedKey null ,setBaseKey");
+          setBaseKey(Ed25519KeyIdentity.fromJSON(storedKey));
+        } else {
+          // generate() without a seed hangs
+          const seed = new Uint8Array(new Array(32).fill(0));
+          key = Ed25519KeyIdentity.generate(seed);
+          console.log("useEffect setBaseKey:", JSON.stringify(key));
+          setBaseKey(key);
+          await save("baseKey", JSON.stringify(key.toJSON()));
+        }
+        const storedDelegation = await AsyncStorage.getItem("delegation");
 
-      const storedDelegation = await AsyncStorage.getItem("delegation");
+      // a valid delegation can be used to set the identity
       if (storedDelegation) {
         const chain = DelegationChain.fromJSON(JSON.parse(storedDelegation));
         if (isDelegationValid(chain)) {
@@ -117,14 +130,8 @@ export function useAuth() {
         },
       },
     });
-    const old_idlFactory = ({ IDL }) => {
-      return IDL.Service({ whoami: IDL.Func([], [IDL.Principal], ["query"]) });
-    };
-      console.log("canisterId:", canisterId);
-      console.log("canisterId EXPO_PUBLIC_BACKEND_ID :", process.env.EXPO_PUBLIC_BACKEND_ID);
     const actor = Actor.createActor(idlFactory, {
       agent,
-      // canisterId: "ivcos-eqaaa-aaaab-qablq-cai",
       canisterId: process.env.EXPO_PUBLIC_BACKEND_ID,
     });
       setBackendActor(actor);
@@ -134,18 +141,37 @@ export function useAuth() {
   }, [identity]);
 
 
-  // Function to handle login and update identity based on base key
+  // after the II phase, ii_integration will redirect to the deeplink URI, inside the app, that may vary
+  const getDeepLink = () => {
+      let deepLink = "";
+      //production/release
+      if (Constants.executionEnvironment === ExecutionEnvironment.Standalone) {
+        // scheme does not work, use platform variables instead
+        deepLink = `${Constants.expoConfig.scheme}://`;
+        if (Platform.OS === "ios")
+          deepLink = `${Constants.ios.bundleIdentifier}://`;
+          else
+          deepLink = `${Constants.android.package}://`;
+
+      } else
+        // expo go, development build, usually "exp://127.0.0.1:8081/--/"
+        deepLink = process.env.EXPO_PUBLIC_DEEP_LINK;
+
+      return deepLink;
+  }
+
+  // Function to handle login and update identity based on base key:
+  // Opens the II_integration Web page, that will interact with II
+  // the actual Web URL will contain the redirect address (deep link) to go back to the app
   const login = async () => {
+    // Object.entries(Constants).forEach((e) => { console.log(e); });
     const derKey = toHex(baseKey.getPublicKey().toDer());
     // const url = new URL("https://tdpaj-biaaa-aaaab-qaijq-cai.icp0.io/");
     const url = new URL(process.env.EXPO_PUBLIC_II_INTEGRATION_URL);
-    // url.searchParams.set("redirect_uri", encodeURIComponent(redirect));
-    url.searchParams.set(
-      "redirect_uri",
-      // encodeURIComponent(`com.anonymous.ic-expo://expo-development-client`)
-      encodeURIComponent(process.env.EXPO_PUBLIC_DEEP_LINK)
-    );
-
+    console.log("login2, scheme: ",Constants.expoConfig.scheme);
+    let deepLink = getDeepLink();
+    url.searchParams.set( "redirect_uri", encodeURIComponent(deepLink));
+    console.log("login deepLink: ", deepLink);
     url.searchParams.set("pubkey", derKey);
     return await WebBrowser.openBrowserAsync(url.toString());
   };

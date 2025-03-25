@@ -22,11 +22,16 @@ Basically:
    expo prebuild
    ```
 
-2. Start the app
+2. Start the app in Expo Go
 
    ```bash
     npx expo start
    ```
+    type "i" for the iOS emulator, or "a" for Android (or use the QR code from a real device)
+
+3. Production builds
+
+    Follow the usual steps (either EAS or XCode/ bundletool) for building and publishing of a Release package
 
 ## Deep Link
 
