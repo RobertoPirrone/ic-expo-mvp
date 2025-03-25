@@ -1,5 +1,6 @@
 {
   "scheme": "expoic",
+  "icon": "./assets/images/splash-icon.png",
   "plugins": [
     "expo-secure-store",
     [
@@ -8,11 +9,5 @@
         "image": "./assets/images/splash-icon.png"
       }
     ]
-  ],
-  "android": {
-    "package": "com.robertopirrone.icexpomvp"
-  },
-  "ios": {
-    "bundleIdentifier": "com.robertopirrone.icexpomvp"
-  }
+  ]
 }
