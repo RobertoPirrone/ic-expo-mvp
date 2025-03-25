@@ -1,4 +1,5 @@
 {
+  "scheme": "expoic",
   "plugins": [
     "expo-secure-store"
   ],
