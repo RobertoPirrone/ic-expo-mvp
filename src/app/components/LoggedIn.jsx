@@ -13,7 +13,7 @@ import { useAuth } from "../hooks/useAuth";
 
 import { Principal } from "@dfinity/principal";
 function LoggedIn({ logout }) {
-  const { backendActor, whoami} = useAuth();
+  const { backendActor, hostPath, whoami} = useAuth();
   const [principal, setPrincipal] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
 
@@ -25,8 +25,10 @@ function LoggedIn({ logout }) {
 
   return (
     <View style={containerStyles}>
+      <>
       <Text style={headerStyles}>Hi everyone!</Text>
       <Text style={subheaderStyles}>You are authenticated!</Text>
+      <Text style={baseTextStyles}>URI {hostPath} </Text>
       <Text style={baseTextStyles}>
         To see how a canister views you, click this button!
       </Text>
@@ -59,6 +61,7 @@ function LoggedIn({ logout }) {
       >
         <Text style={buttonTextStyles}>Log out</Text>
       </Pressable>
+      </>
     </View>
   );
 }
