@@ -2,7 +2,7 @@
 
 Changes to Kaia's repo needed for Expo SDK52 (cli 0.22.20)
 
-This repo is still in its early stage, but runs woth in *Expo Go* and as a real app, iOS and Android.
+This repo is still in its early stage, but has been used in *Expo Go* and as a real app, iOS and Android.
 
 Changes are only on the React Native code, there are no changes to the canisters stuff, I use the ones provided by Kaia
 
