@@ -19,7 +19,6 @@ Basically:
 
    ```bash
    npm install
-   expo prebuild
    ```
 
 2. Start the app in Expo Go
@@ -27,8 +26,9 @@ Basically:
    ```bash
     npx expo start
    ```
-
-    type "i" for the iOS emulator, or "a" for Android (or point the QR code from a real device)
+    Type "i" for the iOS emulator, or "a" for Android (or point the QR code from a real device)
+    
+    The fastest way to try the code is to run in *Expo Go*, no compilation required. If you installed the package *expo-dev-client*, remember to type **s** to switch from devel server to Expo Go
     
     On the iOS Simulator the fingerprint is under *Features/TouchId*, you may need to deselect and select again the *Enrolled* entry, then you can use the *Matching Touch* entry
 
@@ -51,9 +51,26 @@ Basically:
     eas build:configure
     eas build # Answer All for both platforms)
     eas submit --platform ios 
-
-
    ```
+
+4. Run a production build (iOS)
+
+Use TestFlight or you can also compile locally and install on a specific device (choosing from a list )
+
+   ```bash
+    expo run:ios --configuration Release --device
+   ```
+
+5. Run a production build (Android)
+
+If you want to try a build on a given device, without using the play store, you can use bundletool (brew install bundletool). download the .aab file produced by *expo build*, and run:
+
+   ```bash
+    bundletool build-apks --bundle=app-release.aab --output=app-release.apks
+    bundletool install-apks --apks=app-release.apks --device-id=ZY224GSPM9
+   ```
+
+    * 
 
 
 ## Deep Link

@@ -4,31 +4,26 @@
  * canisterId instead is derived from the expo environment, the declarations value is based on process.env
  * basically the first two useEffect() will compute the key and the deepLink
  * login() will call the II_integration Web page, with the above variables in the search string
- * the third useEffect 
+ * the third useEffect
  * the caller code will be given, among other things, an Actor
  * @example
  * import { useAuth } from "../hooks/useAuth";
  * const { backendActor, whoami} = useAuth();
- * 
+ *
  **/
 
-import { useState, useEffect } from "react";
 import { toHex } from "@dfinity/agent";
-import {
-  Ed25519KeyIdentity,
-  DelegationChain,
-  DelegationIdentity,
-  isDelegationValid,
-} from "@dfinity/identity";
 import { Actor, HttpAgent } from "@dfinity/agent";
-import { Principal } from "@dfinity/principal";
 import { blsVerify } from "@dfinity/bls-verify";
-import * as WebBrowser from "expo-web-browser";
-import { useURL } from "expo-linking";
-import { Platform } from "react-native";
+import { DelegationChain, DelegationIdentity, Ed25519KeyIdentity, isDelegationValid } from "@dfinity/identity";
+import { Principal } from "@dfinity/principal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants, { ExecutionEnvironment } from "expo-constants";
+import { useURL } from "expo-linking";
 import * as SecureStore from "expo-secure-store";
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import * as WebBrowser from "expo-web-browser";
+import { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { canisterId, idlFactory } from "../../declarations/whoami";
 
 async function save(key, value) {
@@ -51,35 +46,32 @@ export function useAuth() {
   useEffect(() => {
     if (identity) return;
     (async () => {
-        let key = null;
-        let storedKey = null;
-        // getItemAsync may crash on reinstall
-        try {
-          storedKey = await SecureStore.getItemAsync('baseKey');
-        } catch (e) {
-          console.error("deleting secureStore baseKey");
-          await SecureStore.deleteItemAsync('baseKey');
-        }
-        if (storedKey) {
-          setBaseKey(Ed25519KeyIdentity.fromJSON(storedKey));
-        } else {
-          // generate() without a seed hangs
-          const seed = new Uint8Array(new Array(32).fill(0));
-          key = Ed25519KeyIdentity.generate(seed);
-          console.log("useEffect setBaseKey:", JSON.stringify(key));
-          setBaseKey(key);
-          await save("baseKey", JSON.stringify(key.toJSON()));
-        }
-        const storedDelegation = await AsyncStorage.getItem("delegation");
+      let key = null;
+      let storedKey = null;
+      // getItemAsync may crash on reinstall
+      try {
+        storedKey = await SecureStore.getItemAsync("baseKey");
+      } catch (e) {
+        console.error("deleting secureStore baseKey");
+        await SecureStore.deleteItemAsync("baseKey");
+      }
+      if (storedKey) {
+        setBaseKey(Ed25519KeyIdentity.fromJSON(storedKey));
+      } else {
+        // generate() without a seed hangs
+        const seed = new Uint8Array(new Array(32).fill(0));
+        key = Ed25519KeyIdentity.generate(seed);
+        console.log("useEffect setBaseKey:", JSON.stringify(key));
+        setBaseKey(key);
+        await save("baseKey", JSON.stringify(key.toJSON()));
+      }
+      const storedDelegation = await AsyncStorage.getItem("delegation");
 
       // a valid delegation can be used to set the identity
       if (storedDelegation) {
         const chain = DelegationChain.fromJSON(JSON.parse(storedDelegation));
         if (isDelegationValid(chain)) {
-          const id = new DelegationIdentity(
-            Ed25519KeyIdentity.fromJSON(storedKey),
-            DelegationChain.fromJSON(JSON.parse(storedDelegation))
-          );
+          const id = new DelegationIdentity(Ed25519KeyIdentity.fromJSON(storedKey), DelegationChain.fromJSON(JSON.parse(storedDelegation)));
           setIdentity(id);
         } else {
           await SecureStore.deleteItemAsync("delegation");
@@ -93,16 +85,14 @@ export function useAuth() {
     // If we have an identity, we don't need to do anything
     if (identity) return;
 
-      if (url === null) return;
-      console.log("url: ", url);
+    if (url === null) return;
+    console.log("url: ", url);
     const host = url?.split("?")[0];
     const search = new URLSearchParams(url?.split("?")[1]);
-      setHostPath(host);
+    setHostPath(host);
     const delegation = search.get("delegation");
     if (delegation) {
-      const chain = DelegationChain.fromJSON(
-        JSON.parse(decodeURIComponent(delegation))
-      );
+      const chain = DelegationChain.fromJSON(JSON.parse(decodeURIComponent(delegation)));
       AsyncStorage.setItem("delegation", JSON.stringify(chain.toJSON()));
       /**
        * @type {DelegationIdentity}
@@ -138,29 +128,28 @@ export function useAuth() {
       agent,
       canisterId: process.env.EXPO_PUBLIC_BACKEND_ID,
     });
-      setBackendActor(actor);
-      const principal = identity.getPrincipal();
-      setWhoami(principal.toText());
-      console.log("whoami useAuth:", principal.toText());
+    setBackendActor(actor);
+    const principal = identity.getPrincipal();
+    setWhoami(principal.toText());
+    console.log("whoami useAuth:", principal.toText());
   }, [identity]);
-
 
   // after the II phase, ii_integration will redirect to the deeplink URI, inside the app, that may vary
   const getDeepLink = () => {
-      let deepLink = "";
-      //production/release
-      console.error(Constants.executionEnvironment);
-      // expo go -> storeClient. prod -> bare or standAlone
-      if (Constants.executionEnvironment == ExecutionEnvironment.StoreClient) {
-        // expo go, development build, usually "exp://127.0.0.1:8081/--/"
-        deepLink = process.env.EXPO_PUBLIC_DEEP_LINK;
-      } else {
-        // scheme seem to work
-        deepLink = `${Constants.expoConfig.scheme}://`;
-      }
+    let deepLink = "";
+    //production/release
+    console.error(Constants.executionEnvironment);
+    // expo go -> storeClient. prod -> bare or standAlone
+    if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+      // expo go, development build, usually "exp://127.0.0.1:8081/--/"
+      deepLink = process.env.EXPO_PUBLIC_DEEP_LINK;
+    } else {
+      // scheme seem to work
+      deepLink = `${Constants.expoConfig.scheme}://`;
+    }
 
-      return deepLink;
-  }
+    return deepLink;
+  };
 
   // Function to handle login and update identity based on base key:
   // Opens the II_integration Web page, that will interact with II
@@ -170,9 +159,9 @@ export function useAuth() {
     const derKey = toHex(baseKey.getPublicKey().toDer());
     // const url = new URL("https://tdpaj-biaaa-aaaab-qaijq-cai.icp0.io/");
     const url = new URL(process.env.EXPO_PUBLIC_II_INTEGRATION_URL);
-    console.log("login2, scheme: ",Constants.expoConfig.scheme);
+    console.log("login2, scheme: ", Constants.expoConfig.scheme);
     const deepLink = getDeepLink();
-    url.searchParams.set( "redirect_uri", encodeURIComponent(deepLink));
+    url.searchParams.set("redirect_uri", encodeURIComponent(deepLink));
     console.error("login deepLink: ", deepLink);
     url.searchParams.set("pubkey", derKey);
     return await WebBrowser.openBrowserAsync(url.toString());
@@ -193,8 +182,8 @@ export function useAuth() {
     logout,
     whoami,
     hostPath,
-    backendActor
+    backendActor,
   };
-};
+}
 
 export default useAuth;
