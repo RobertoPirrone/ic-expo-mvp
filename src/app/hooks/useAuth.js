@@ -40,6 +40,7 @@ export function useAuth() {
   const [isReady, setIsReady] = useState(false);
   const [backendActor, setBackendActor] = useState(null);
   const [whoami, setWhoami] = useState(null);
+  const [hostPath, setHostPath] = useState(""); // URI string without the query part
   const url = useURL();
   /**
    * @type {[DelegationIdentity | null, React.Dispatch<DelegationIdentity | null>]} state
@@ -60,7 +61,6 @@ export function useAuth() {
           await SecureStore.deleteItemAsync('baseKey');
         }
         if (storedKey) {
-          console.error("storedKey null ,setBaseKey");
           setBaseKey(Ed25519KeyIdentity.fromJSON(storedKey));
         } else {
           // generate() without a seed hangs
@@ -93,7 +93,11 @@ export function useAuth() {
     // If we have an identity, we don't need to do anything
     if (identity) return;
 
+      if (url === null) return;
+      console.log("url: ", url);
+    const host = url?.split("?")[0];
     const search = new URLSearchParams(url?.split("?")[1]);
+      setHostPath(host);
     const delegation = search.get("delegation");
     if (delegation) {
       const chain = DelegationChain.fromJSON(
@@ -145,17 +149,15 @@ export function useAuth() {
   const getDeepLink = () => {
       let deepLink = "";
       //production/release
-      if (Constants.executionEnvironment === ExecutionEnvironment.Standalone) {
-        // scheme does not work, use platform variables instead
-        deepLink = `${Constants.expoConfig.scheme}://`;
-        if (Platform.OS === "ios")
-          deepLink = `${Constants.ios.bundleIdentifier}://`;
-          else
-          deepLink = `${Constants.android.package}://`;
-
-      } else
+      console.error(Constants.executionEnvironment);
+      // expo go -> storeClient. prod -> bare or standAlone
+      if (Constants.executionEnvironment == ExecutionEnvironment.StoreClient) {
         // expo go, development build, usually "exp://127.0.0.1:8081/--/"
         deepLink = process.env.EXPO_PUBLIC_DEEP_LINK;
+      } else {
+        // scheme seem to work
+        deepLink = `${Constants.expoConfig.scheme}://`;
+      }
 
       return deepLink;
   }
@@ -169,9 +171,9 @@ export function useAuth() {
     // const url = new URL("https://tdpaj-biaaa-aaaab-qaijq-cai.icp0.io/");
     const url = new URL(process.env.EXPO_PUBLIC_II_INTEGRATION_URL);
     console.log("login2, scheme: ",Constants.expoConfig.scheme);
-    let deepLink = getDeepLink();
+    const deepLink = getDeepLink();
     url.searchParams.set( "redirect_uri", encodeURIComponent(deepLink));
-    console.log("login deepLink: ", deepLink);
+    console.error("login deepLink: ", deepLink);
     url.searchParams.set("pubkey", derKey);
     return await WebBrowser.openBrowserAsync(url.toString());
   };
@@ -190,6 +192,7 @@ export function useAuth() {
     login,
     logout,
     whoami,
+    hostPath,
     backendActor
   };
 };
