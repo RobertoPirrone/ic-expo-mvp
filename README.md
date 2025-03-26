@@ -27,11 +27,34 @@ Basically:
    ```bash
     npx expo start
    ```
-    type "i" for the iOS emulator, or "a" for Android (or use the QR code from a real device)
+
+    type "i" for the iOS emulator, or "a" for Android (or point the QR code from a real device)
+    
+    On the iOS Simulator the fingerprint is under *Features/TouchId*, you may need to deselect and select again the *Enrolled* entry, then you can use the *Matching Touch* entry
 
 3. Production builds
 
     Follow the usual steps (either EAS or XCode/ bundletool) for building and publishing of a Release package
+
+    Local Build in production mode (w/o signing):
+
+   ```bash
+    expo run:android --variant release # https://docs.expo.dev/more/expo-cli/#compiling-android
+    expo run:ios --configuration Release # https://docs.expo.dev/more/expo-cli/#compiling-ios
+   ```
+
+    Example for EAS:
+
+   ```bash
+    eas login
+    eas init
+    eas build:configure
+    eas build # Answer All for both platforms)
+    eas submit --platform ios 
+
+
+   ```
+
 
 ## Deep Link
 
