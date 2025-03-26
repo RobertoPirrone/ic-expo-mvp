@@ -2,20 +2,19 @@
 
 Changes to Kaia's repo needed for Expo SDK52 (cli 0.22.20)
 
-This repo is still in its early stage, tested only on the iOS simulator. 
+This repo is still in its early stage, but runs woth in *Expo Go* and as a real app, iOS and Android.
 
-No changes to the canisters stuff, I use the ones provided by Kaia
+Changes are only on the React Native code, there are no changes to the canisters stuff, I use the ones provided by Kaia
 
 Basically:
 - updated package versions
 - the content of App.js now is src/app/index.tsx
 - the URL of the deep link contains the string *redirect*, so a redirect.tsx is needed under src/app
-- deep link URL is taken from the environment (EXPO_PUBLIC_DEEP_LINK)
-- I used Expo Go, so the deep link url has a *exp:* scheme: exp://127.0.0.1:8081/--/
+- deep link URL is taken from the environment (EXPO_PUBLIC_DEEP_LINK, should be "exp://127.0.0.1:8081/--/") for *Expo go*, or from the *scheme* variable in production builds
 
 ## Get started
 
-1. Install dependencies (both standard expo stuff and the IC libraries), and build the ios and android environment
+1. Install dependencies (both standard expo stuff and the IC libraries)
 
    ```bash
    npm install
@@ -28,7 +27,7 @@ Basically:
    ```
     Type "i" for the iOS emulator, or "a" for Android (or point the QR code from a real device)
     
-    The fastest way to try the code is to run in *Expo Go*, no compilation required. If you installed the package *expo-dev-client*, remember to type **s** to switch from devel server to Expo Go
+    The fastest way to try the code is to run in *Expo Go*, no compilation required. If you added the package *expo-dev-client*, remember to type **s** to switch from devel server to Expo Go
     
     On the iOS Simulator the fingerprint is under *Features/TouchId*, you may need to deselect and select again the *Enrolled* entry, then you can use the *Matching Touch* entry
 
@@ -55,7 +54,7 @@ Basically:
 
 4. Run a production build (iOS)
 
-Use TestFlight or you can also compile locally and install on a specific device (choosing from a list )
+You can either use TestFlight or you can also compile locally and install on a specific device (choosing from a list):
 
    ```bash
     expo run:ios --configuration Release --device
@@ -69,9 +68,6 @@ If you want to try a build on a given device, without using the play store, you 
     bundletool build-apks --bundle=app-release.aab --output=app-release.apks
     bundletool install-apks --apks=app-release.apks --device-id=ZY224GSPM9
    ```
-
-    * 
-
 
 ## Deep Link
 
