@@ -6,9 +6,9 @@ window.TextEncoder = TextEncoder;
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { TextEncoder } from "text-encoding";
-import LoggedOut from "./components/LoggedOut";
-import LoggedIn from "./components/LoggedIn";
-import { useAuth } from "./hooks/useAuth";
+import LoggedOut from "../components/LoggedOut";
+import LoggedIn from "../components/LoggedIn";
+import { useAuth } from "../hooks/useAuth";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();

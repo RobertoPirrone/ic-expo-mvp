@@ -11,6 +11,8 @@ Basically:
 - the content of App.js now is src/app/index.tsx
 - the URL of the deep link contains the string *redirect*, so a redirect.tsx is needed under src/app
 - deep link URL is taken from the environment (EXPO_PUBLIC_DEEP_LINK, should be "exp://127.0.0.1:8081/--/") for *Expo go*, or from the *scheme* variable in production builds
+- Standard Expo/ React Native Directory structure
+- Internet Computer stuff moved in a separate directory
 
 ## Get started
 
@@ -69,9 +71,13 @@ If you want to try a build on a given device, without using the play store, you 
     bundletool install-apks --apks=app-release.apks --device-id=ZY224GSPM9
    ```
 
-## Deep Link
+# How it works
+
+This is a Expo application. With the help of some dfinity libraries, the JS code will interact with the Internet Identity auth and backend containers. II cannot be accessed directly from the React Native code, we use a Web container acting as a proxy, that will receive a Ed25519 key, and produce a a *delegation*
 
 After the Authentication phase, control is transfered back to the mobile app, using a **Deep Link**. This kind of link changes from development to production. 
+
+The **declarations** directory will hold the backend interface (i.e. the files created by *dfx generate*), that are used by the hook (useAuth) to give an *Actor* able to interact with the backend canisters
 
 ## Learn more
 

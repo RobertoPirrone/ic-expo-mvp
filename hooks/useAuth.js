@@ -24,7 +24,7 @@ import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
-import { canisterId, idlFactory } from "../../declarations/whoami";
+import { canisterId, idlFactory } from "../declarations/whoami";
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
