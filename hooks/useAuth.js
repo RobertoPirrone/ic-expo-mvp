@@ -22,25 +22,41 @@ import Constants, { ExecutionEnvironment } from "expo-constants";
 import { useURL } from "expo-linking";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState } from "react";
+import { PropsWithChildren, createContext, useContext, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { canisterId, idlFactory } from "../declarations/whoami";
+
+const AuthContext = createContext();
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
 }
 
-export function useAuth() {
+// after the II phase, ii_integration will redirect to the deeplink URI, inside the app, that may vary
+const getDeepLink = () => {
+  let deepLink = "";
+  //production/release
+  console.error(Constants.executionEnvironment);
+  // expo go -> storeClient. prod -> bare or standAlone
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    // expo go, development build, usually "exp://127.0.0.1:8081/--/"
+    deepLink = process.env.EXPO_PUBLIC_DEEP_LINK;
+  } else {
+    // scheme seem to work
+    deepLink = `${Constants.expoConfig.scheme}://`;
+  }
+
+  return deepLink;
+};
+
+const useAuthClient = () => {
   const [baseKey, setBaseKey] = useState();
   const [isReady, setIsReady] = useState(false);
   const [backendActor, setBackendActor] = useState(null);
   const [whoami, setWhoami] = useState(null);
   const [hostPath, setHostPath] = useState(""); // URI string without the query part
-  const url = useURL();
-  /**
-   * @type {[DelegationIdentity | null, React.Dispatch<DelegationIdentity | null>]} state
-   */
   const [identity, setIdentity] = useState(null);
+  const url = useURL();
 
   // we can already have a key in the Storage, otherwise get it
   useEffect(() => {
@@ -101,13 +117,16 @@ export function useAuth() {
       setIdentity(id);
 
       WebBrowser.dismissBrowser();
+      setIsReady(true);
     }
   }, [url]);
 
   useEffect(() => {
+    console.log("useEffect3");
     if (!identity) return;
     if (backendActor) return;
     // delegation ok, ready to build the agent and then the actor
+    console.log("useEffect3.1");
     const agent = new HttpAgent({
       identity,
       host: "https://icp-api.io",
@@ -128,62 +147,55 @@ export function useAuth() {
       agent,
       canisterId: process.env.EXPO_PUBLIC_BACKEND_ID,
     });
+    console.log("useEffect3.2");
     setBackendActor(actor);
     const principal = identity.getPrincipal();
     setWhoami(principal.toText());
     console.log("whoami useAuth:", principal.toText());
+    setIsReady(true);
   }, [identity]);
 
-  // after the II phase, ii_integration will redirect to the deeplink URI, inside the app, that may vary
-  const getDeepLink = () => {
-    let deepLink = "";
-    //production/release
-    console.error(Constants.executionEnvironment);
-    // expo go -> storeClient. prod -> bare or standAlone
-    if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
-      // expo go, development build, usually "exp://127.0.0.1:8081/--/"
-      deepLink = process.env.EXPO_PUBLIC_DEEP_LINK;
-    } else {
-      // scheme seem to work
-      deepLink = `${Constants.expoConfig.scheme}://`;
-    }
-
-    return deepLink;
+  // Clear identity on logout
+  const logout = async () => {
+    console.log("logout");
+    setIdentity(null);
+    await AsyncStorage.removeItem("delegation");
   };
 
   // Function to handle login and update identity based on base key:
   // Opens the II_integration Web page, that will interact with II
   // the actual Web URL will contain the redirect address (deep link) to go back to the app
   const login = async () => {
-    // Object.entries(Constants).forEach((e) => { console.log(e); });
+    Object.entries(Constants).forEach((e) => {
+      console.log(e);
+    });
     const derKey = toHex(baseKey.getPublicKey().toDer());
     // const url = new URL("https://tdpaj-biaaa-aaaab-qaijq-cai.icp0.io/");
-    const url = new URL(process.env.EXPO_PUBLIC_II_INTEGRATION_URL);
+    const ii_url = new URL(process.env.EXPO_PUBLIC_II_INTEGRATION_URL);
     console.log("login2, scheme: ", Constants.expoConfig.scheme);
     const deepLink = getDeepLink();
-    url.searchParams.set("redirect_uri", encodeURIComponent(deepLink));
+    ii_url.searchParams.set("redirect_uri", encodeURIComponent(deepLink));
     console.error("login deepLink: ", deepLink);
-    url.searchParams.set("pubkey", derKey);
-    return await WebBrowser.openBrowserAsync(url.toString());
-  };
-
-  // Clear identity on logout
-  const logout = async () => {
-    setIdentity(null);
-    await AsyncStorage.removeItem("delegation");
+    ii_url.searchParams.set("pubkey", derKey);
+    return await WebBrowser.openBrowserAsync(ii_url.toString());
   };
 
   return {
-    baseKey,
-    setBaseKey,
-    identity,
-    isReady,
     login,
     logout,
-    whoami,
-    hostPath,
+    baseKey,
+    isReady,
     backendActor,
+    whoami,
+    identity,
+    hostPath,
   };
-}
+};
 
-export default useAuth;
+export const AuthProvider = ({ children }) => {
+  const auth = useAuthClient();
+  // console.log("AuthProvider: ", auth);
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => useContext(AuthContext);
