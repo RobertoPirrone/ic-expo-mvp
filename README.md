@@ -22,7 +22,17 @@ Basically:
    npm install
    ```
 
-2. Start the app in Expo Go
+2. Create icons
+
+You may have a almost square image that you want to use both for the splashscreen (that need the the white converted in alpha channel) and for the app icon (no alpha)
+   ```bash
+   magick almost_square.png -resize 1024x1024! icon.png
+   magick logo.png  -transparent  white splash-icon.png
+   mkdir -p assets/images
+   mv icon.png splash-icon.png assets/images
+   ``
+`
+3. Start the app in Expo Go
 
    ```bash
     npx expo start
@@ -33,7 +43,7 @@ Basically:
     
     On the iOS Simulator the fingerprint is under *Features/TouchId*, you may need to deselect and select again the *Enrolled* entry, then you can use the *Matching Touch* entry
 
-3. Production builds
+4. Production builds
 
     Follow the usual steps (either EAS or XCode/ bundletool) for building and publishing of a Release package
 
@@ -54,7 +64,7 @@ Basically:
     eas submit --platform ios 
    ```
 
-4. Run a production build (iOS)
+5. Run a production build (iOS)
 
 You can either use TestFlight or you can also compile locally and install on a specific device (choosing from a list):
 
@@ -62,7 +72,7 @@ You can either use TestFlight or you can also compile locally and install on a s
     expo run:ios --configuration Release --device
    ```
 
-5. Run a production build (Android)
+6. Run a production build (Android)
 
 If you want to try a build on a given device, without using the play store, you can use bundletool (brew install bundletool). download the .aab file produced by *expo build*, and run:
 
