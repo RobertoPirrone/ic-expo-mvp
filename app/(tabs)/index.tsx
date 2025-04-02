@@ -1,8 +1,8 @@
 import { Redirect } from "expo-router";
 import { SafeAreaView, Text } from "react-native";
-import LoggedIn from "../../components/LoggedIn";
-import { styles } from "../../components/Styles";
-import { useAuth } from "../../hooks/useAuth";
+import LoggedIn from "../../auth/LoggedIn";
+import { styles } from "../../auth/Styles";
+import { useAuth } from "../../auth/useAuth";
 
 export default function HomeScreen() {
   const { logout } = useAuth();

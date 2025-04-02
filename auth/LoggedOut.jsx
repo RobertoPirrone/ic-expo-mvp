@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "./useAuth";
 import { baseTextStyles, buttonStyles, buttonTextStyles, containerStyles, disabledButtonStyles, headerStyles, subheaderStyles } from "./KaiaStyles";
 
 export default function LoggedOut() {

@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { SafeAreaView, Text } from "react-native";
-import { Collapsible } from "../..//components/Collapsible";
-import { styles } from "../../components/Styles";
+import { Collapsible } from "../../auth/Collapsible";
+import { styles } from "../../auth/Styles";
 
 export default function TabTwoScreen() {
   return (
